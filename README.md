@@ -65,8 +65,8 @@ tests/
 
 1. Clone and enter the repo:
    ```bash
-   git clone 
-   cd corridor-pulse-backend
+   git clone https://github.com/nitin864/EnerShield_backend.git
+   cd EnerShield_backend
    ```
 2. Create a virtual environment and install dependencies:
    ```bash
