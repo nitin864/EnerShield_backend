@@ -62,14 +62,14 @@ class Supplier(Base):
 
     name = Column(String(120), nullable=False)
 
-   corridor_id = Column(Integer, ForeignKey("corridors.id"), nullable=False)
-   corridor = relationship("Corridor")
+    corridor_id = Column(Integer, ForeignKey("corridors.id"), nullable=False)
+    corridor = relationship("Corridor")
 
-   distance_km = Column(Float, nullable=True)
+    distance_km = Column(Float, nullable=True)
 
-   cost_proxy = column(Float, nullable=True)
+    cost_proxy = Column(Float, nullable=True)
 
-   created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 class Headline(Base):
     """
@@ -80,20 +80,19 @@ class Headline(Base):
 
     id = Column(Integer, primary_key=True)
 
-    # TODO: corridor_id — ForeignKey to corridors.id (this headline is ABOUT which corridor)
-    # TODO: corridor — relationship("Corridor", back_populates="headlines")
-    #   Note: back_populates must match the name you used in Corridor.headlines above
+    corridor_id = Column(Integer, ForeignKey("corridors.id"), nullable=False)
+    corridor = relationship("Corridor", back_populates="headlines")
 
-    # TODO: title — the headline text itself. Headlines can be long — consider String(500) or Text
+    title = Column(String(500), nullable=True)
 
-    # TODO: source — e.g. "Reuters", "GDELT" (String, shortish)
+    source = Column(String(100), nullable=True)
 
-    # TODO: url — link to the original article (String, longer — urls can be long)
+    url = Column(String(1000), nullable=True)
 
-    # TODO: published_at — when the article was published (DateTime, nullable — not all sources give this cleanly)
+    published_at = Column(DateTime, nullable=True)
 
-    # TODO: fetched_at — when YOUR ingestion job pulled it (default=lambda: datetime.now(timezone.utc))
-
+    fetched_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+ 
 
 class RiskHistory(Base):
     """
@@ -104,13 +103,13 @@ class RiskHistory(Base):
 
     id = Column(Integer, primary_key=True)
 
-    # TODO: corridor_id — ForeignKey to corridors.id
-    # TODO: corridor — relationship("Corridor", back_populates="risk_history")
+    corridor_id = Column(Integer, ForeignKey("corridors.id"), nullable=False)
+    corridor = relationship("Corridor", back_populates="risk_history")
 
-    # TODO: score — the 0-100 disruption probability (Integer)
+    score = Column(Integer, nullable=False)
 
-    # TODO: confidence — how confident was the LLM in this score? (Float, e.g. 0.0-1.0)
+    confidence = Column(Float, nullable=True)
 
-    # TODO: justification — the LLM's reasoning text for this score (Text — this can be long, Text has no length limit unlike String)
+    justification = Column(Text, nullable=True)
 
-    # TODO: scored_at — when this scoring run happened (default=lambda: datetime.now(timezone.utc))
+    scored_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
