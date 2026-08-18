@@ -1,4 +1,4 @@
-# Corridor Pulse — Backend
+# EnerShield — Backend
 
 AI-driven energy supply chain resilience API. Backend for PS1 (hackathon submission).
 
@@ -65,7 +65,7 @@ tests/
 
 1. Clone and enter the repo:
    ```bash
-   git clone <repo-url>
+   git clone 
    cd corridor-pulse-backend
    ```
 2. Create a virtual environment and install dependencies:
