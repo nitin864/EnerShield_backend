@@ -11,7 +11,7 @@ from app.core.config import settings
 from app.core.database import get_db
 
 app = FastAPI(
-    title="Corridor Pulse API",
+    title="EnerShield API",
     description="AI-driven energy supply chain resilience backend",
     version="0.1.0",
 )
@@ -27,7 +27,7 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    return {"service": "corridor-pulse-api", "status": "running", "env": settings.env}
+    return {"service": "ener-shield-api", "status": "running", "env": settings.env}
 
 
 @app.get("/health")
@@ -49,9 +49,4 @@ def health(db: Session = Depends(get_db)):
         "claude_model": settings.claude_model,
     }
 
-
-# Routers are registered here as each module is built.
-# from app.routers import risk, simulate, recommend
-# app.include_router(risk.router)
-# app.include_router(simulate.router)
-# app.include_router(recommend.router)
+ 
