@@ -16,7 +16,7 @@ Backend is being built module by module. Check off as each lands:
 
 - [x] Module 1 — Core scaffold (FastAPI app, config, DB connection, health check)
 - [x] Module 2 — Data models (corridors, suppliers, headlines, risk_history)
-- [ ] Module 3 — Ingestion pipeline (GDELT, NewsAPI, EIA, OFAC)
+- [x] Module 3 — Ingestion pipeline (GDELT, NewsAPI, EIA, OFAC)
 - [ ] Module 4 — Risk scoring engine (`/risk-score`)
 - [ ] Module 5 — Scenario simulator (`/simulate`)
 - [ ] Module 6 — Procurement orchestrator (`/recommend`)
