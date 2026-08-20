@@ -33,9 +33,9 @@ def run_all_ingestion_jobs():
 def start_scheduler():
     scheduler.add_job(
         run_all_ingestion_jobs,
-        trigger = "interval"
+        trigger = "interval",
         minutes = settings.ingest_interval_minutes,
-        if = "ingestion_job",
+        id = "ingestion_job",
         replace_existing = True,
         next_run_time = None
 

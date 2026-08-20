@@ -9,12 +9,21 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.jobs.scheduler import start_scheduler, stop_scheduler
 
 app = FastAPI(
     title="EnerShield API",
     description="AI-driven energy supply chain resilience backend",
     version="0.1.0",
 )
+
+@app.on_event("startup")
+def on_startup():
+    start_scheduler()
+
+@app.on_event("shutdown")
+def on_shutdown():
+    stop_scheduler()
 
 app.add_middleware(
     CORSMiddleware,
@@ -34,7 +43,7 @@ def root():
 def health(db: Session = Depends(get_db)):
     """
     Liveness + DB connectivity check.
-    Hit this first after every deploy — if this is green, everything downstream
+    Hit this first after every deploy  if this is green, everything downstream
     has a working DB connection to build on.
     """
     try:
