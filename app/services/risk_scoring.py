@@ -57,7 +57,7 @@ def call_claude_for_score(corridor_name: str, headlines: list[Headline]) -> dict
     """
     prompt = build_scoring_prompt(corridor_name, headlines)
 
-    raw_text = complete(prompt, max_tokens=300)
+    raw_text = complete(prompt, max_tokens=600)
 
     result = json.loads(raw_text)  # will raise if the LLM didn't return clean JSON
 
@@ -75,10 +75,9 @@ def call_claude_for_score(corridor_name: str, headlines: list[Headline]) -> dict
 
 def score_corridor(db, corridor: Corridor) -> dict:
     """
-    Scores one corridor: fetches its recent headlines, calls Claude,
-    saves a new RiskHistory row, updates the corridor's cached current score."""
-
-    
+    Scores one corridor: fetches its recent headlines, calls the LLM,
+    saves a new RiskHistory row, updates the corridor's cached current score.
+    """
     headlines = (
         db.query(Headline)
         .filter_by(corridor_id=corridor.id)
@@ -90,7 +89,9 @@ def score_corridor(db, corridor: Corridor) -> dict:
     try:
         result = call_claude_for_score(corridor.name, headlines)
 
-    except Exception:
+    except Exception as e:
+        print(f"Live scoring failed for {corridor.name}: {e}")
+
         last_history = (
             db.query(RiskHistory)
             .filter_by(corridor_id=corridor.id)
@@ -102,17 +103,13 @@ def score_corridor(db, corridor: Corridor) -> dict:
             result = {
                 "score": last_history.score,
                 "confidence": last_history.confidence,
-                "justification": (
-                    "Live scoring unavailable — showing last known score."
-                ),
+                "justification": "Live scoring unavailable — showing last known score.",
             }
         else:
             result = {
                 "score": 50,
                 "confidence": 0.0,
-                "justification": (
-                    "No prior data and live scoring unavailable."
-                ),
+                "justification": "No prior data and live scoring unavailable.",
             }
 
     risk_history = RiskHistory(
@@ -129,10 +126,6 @@ def score_corridor(db, corridor: Corridor) -> dict:
     db.add(risk_history)
 
     return result
-
-    except Exception as e:
-    print(f"Live scoring failed for {corridor.name}: {e}")
-    last_history = (
 
 
 def score_all_corridors():
