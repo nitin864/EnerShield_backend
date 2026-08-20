@@ -123,9 +123,9 @@ class EnergyMetric(Base):
     __tablename__ = "energy_metrics"
 
     id = Column(Integer, primary_key=True)
-    series_id = Column(String(50), nullable=False)      # e.g. "RWTC" (WTI spot price)
-    description = Column(String(255), nullable=True)     # human-readable label
-    period = Column(String(20), nullable=False)           # EIA's date string, e.g. "2026-08-18"
-    value = Column(Float, nullable=True)                  # the actual number
-    unit = Column(String(50), nullable=True)               # e.g. "$/BBL"
+    series_id = Column(String(50), nullable=False)       
+    description = Column(String(255), nullable=True)     
+    period = Column(String(20), nullable=False)           
+    value = Column(Float, nullable=True)                  
+    unit = Column(String(50), nullable=True)              
     fetched_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
