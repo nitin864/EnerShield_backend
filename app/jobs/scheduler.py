@@ -13,3 +13,20 @@ from app.services.eia_ingestion import ingest_eia_data
 
 scheduler = BackgroundScheduler()
 
+def run_all_ingestion_jobs():
+    """
+    warping both ingestion jobs with each having individual error handeling,
+    if NewsAPI ingestion throw, EIA ingestion should still run.
+    error from any one source should not take down the whole pipeline"""
+
+    try: 
+        ingest_all_corridors()
+    except Exception as e:
+        print(f"News ingestion job failed {e}")
+
+    try:
+        ingest_eia_data()
+    except Exception as e:
+        print(f"EIA ingestion job failed {e}")
+
+    
