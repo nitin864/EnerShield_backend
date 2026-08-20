@@ -113,3 +113,19 @@ class RiskHistory(Base):
     justification = Column(Text, nullable=True)
 
     scored_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+class EnergyMetric(Base):
+    """
+    A single data point from an EIA time series (e.g. WTI crude spot price).
+    Generic on purpose — one table handles any EIA series by series_id,
+    so adding a new metric later needs no schema change.
+    """
+    __tablename__ = "energy_metrics"
+
+    id = Column(Integer, primary_key=True)
+    series_id = Column(String(50), nullable=False)      # e.g. "RWTC" (WTI spot price)
+    description = Column(String(255), nullable=True)     # human-readable label
+    period = Column(String(20), nullable=False)           # EIA's date string, e.g. "2026-08-18"
+    value = Column(Float, nullable=True)                  # the actual number
+    unit = Column(String(50), nullable=True)               # e.g. "$/BBL"
+    fetched_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
