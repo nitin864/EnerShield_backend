@@ -1,4 +1,4 @@
-# Corridor Pulse — Backend
+# Ener Shield — Backend
 
 AI-driven energy supply chain resilience API. Backend for PS1 (hackathon submission).
 
