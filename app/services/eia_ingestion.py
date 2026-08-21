@@ -50,37 +50,20 @@ def save_metric_if_new(db, series_id: str, description: str, point: dict) -> boo
     Returns True if a new row was inserted.
 
     point dict has: point["period"] (date string), point["value"] (string
-    number, may need float() conversion), point.get("units") (string)."""
+    number, may need float() conversion), point.get("units") (string).
 
-    
-    # checking if this eact period already exists for this series
-    existing = (
-        db.query(EnergyMetric)
-        .filter_by(
-            series_id = series_id,
-            period = point["period"]
-        )
-        .first()
-    )
+    YOUR TURN — no line-by-line this time. Plan:
+    1. Query EnergyMetric filtered by series_id AND period — does a row
+       already exist for this exact date?
+    2. If yes, return False.
+    3. If no, create a new EnergyMetric with series_id, description,
+       period=point["period"], value=float(point["value"]),
+       unit=point.get("units"), fetched_at=now.
+    4. db.add() it, return True.
 
-    # adding a condition if exist, don't insert a duplicate
-    if existing:
-        return False
-
-    # if it not exist then creating a new EnergyMetric
-    metric = EnergyMetric(
-        series_id = series_id,
-        description = description,
-        period = point["period"],
-        value = float(point["value"]),
-        unit = point.get("units"),
-        fetched_at = datetime.now(timezone.utc)
-    )
-
-    # adding it to session
-    db.add(metric) 
-
-    return True
+    Same shape as save_headline_if_new — just different fields.
+    """
+    pass  # <- your implementation
 
 
 def ingest_eia_data():

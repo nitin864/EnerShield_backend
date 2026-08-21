@@ -15,7 +15,7 @@ class Settings(BaseSettings):
 
     # Groq API (free alternative — used for now)
     groq_api_key: str = ""
-    groq_model: str = "llama-3.3-70b-versatile"
+    groq_model: str = "openai/gpt-oss-20b"
 
     # Which provider risk_scoring.py should actually call
     llm_provider: str = "groq"  # "groq" or "claude"

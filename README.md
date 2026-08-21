@@ -1,4 +1,4 @@
-# EnerShield — Backend
+# Corridor Pulse — Backend
 
 AI-driven energy supply chain resilience API. Backend for PS1 (hackathon submission).
 
@@ -15,8 +15,8 @@ routes — with Claude as the reasoning/explanation layer on top of deterministi
 Backend is being built module by module. Check off as each lands:
 
 - [x] Module 1 — Core scaffold (FastAPI app, config, DB connection, health check)
-- [x] Module 2 — Data models (corridors, suppliers, headlines, risk_history)
-- [x] Module 3 — Ingestion pipeline (GDELT, NewsAPI, EIA, OFAC)
+- [ ] Module 2 — Data models (corridors, suppliers, headlines, risk_history)
+- [ ] Module 3 — Ingestion pipeline (GDELT, NewsAPI, EIA, OFAC)
 - [ ] Module 4 — Risk scoring engine (`/risk-score`)
 - [ ] Module 5 — Scenario simulator (`/simulate`)
 - [ ] Module 6 — Procurement orchestrator (`/recommend`)
@@ -65,8 +65,8 @@ tests/
 
 1. Clone and enter the repo:
    ```bash
-   git clone https://github.com/nitin864/EnerShield_backend.git
-   cd EnerShield_backend
+   git clone <repo-url>
+   cd corridor-pulse-backend
    ```
 2. Create a virtual environment and install dependencies:
    ```bash

@@ -75,57 +75,42 @@ def call_claude_for_score(corridor_name: str, headlines: list[Headline]) -> dict
 
 def score_corridor(db, corridor: Corridor) -> dict:
     """
-    Scores one corridor: fetches its recent headlines, calls the LLM,
+    Scores one corridor: fetches its recent headlines, calls Claude,
     saves a new RiskHistory row, updates the corridor's cached current score.
+
+    YOUR TURN — implement the fallback safety net:
+
+    1. Fetch the corridor's most recent headlines:
+         db.query(Headline).filter_by(corridor_id=corridor.id)
+           .order_by(Headline.published_at.desc())
+           .limit(HEADLINES_PER_SCORE).all()
+
+    2. Try calling call_claude_for_score(corridor.name, headlines) inside
+       a try/except block.
+
+    3. IF IT SUCCEEDS: use that result directly.
+
+    4. IF IT FAILS (any Exception): this is the fallback —
+       query the corridor's most recent existing RiskHistory row
+       (order_by(RiskHistory.scored_at.desc()).first()), and reuse
+       its score/confidence. Set justification to something like
+       "Live scoring unavailable — showing last known score."
+       If there's no RiskHistory row at all yet (very first run ever),
+       fall back to a neutral default: score=50, confidence=0.0,
+       justification="No prior data and live scoring unavailable."
+
+    5. Either way, create a new RiskHistory row with the result
+       (yes, even the fallback case gets logged — this is useful for
+       debugging later: you can see exactly when live scoring failed).
+
+    6. Update corridor.current_risk_score and corridor.last_scored_at
+       to match, so the map/dashboard reads stay in sync.
+
+    7. db.add() the RiskHistory row, return the result dict.
+       (Don't commit here — let the caller batch-commit, same pattern
+       as ingestion.)
     """
-    headlines = (
-        db.query(Headline)
-        .filter_by(corridor_id=corridor.id)
-        .order_by(Headline.published_at.desc())
-        .limit(HEADLINES_PER_SCORE)
-        .all()
-    )
-
-    try:
-        result = call_claude_for_score(corridor.name, headlines)
-
-    except Exception as e:
-        print(f"Live scoring failed for {corridor.name}: {e}")
-
-        last_history = (
-            db.query(RiskHistory)
-            .filter_by(corridor_id=corridor.id)
-            .order_by(RiskHistory.scored_at.desc())
-            .first()
-        )
-
-        if last_history:
-            result = {
-                "score": last_history.score,
-                "confidence": last_history.confidence,
-                "justification": "Live scoring unavailable — showing last known score.",
-            }
-        else:
-            result = {
-                "score": 50,
-                "confidence": 0.0,
-                "justification": "No prior data and live scoring unavailable.",
-            }
-
-    risk_history = RiskHistory(
-        corridor_id=corridor.id,
-        score=result["score"],
-        confidence=result["confidence"],
-        justification=result["justification"],
-        scored_at=datetime.now(timezone.utc),
-    )
-
-    corridor.current_risk_score = result["score"]
-    corridor.last_scored_at = datetime.now(timezone.utc)
-
-    db.add(risk_history)
-
-    return result
+    pass  # <- your implementation
 
 
 def score_all_corridors():
