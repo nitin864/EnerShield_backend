@@ -5,7 +5,10 @@ in plain language. Numbers come from the formula, not the LLM.
 """
 import json
 
+from sqlalchemy.orm import Session
+
 from app.services.llm_client import complete
+from app.models.models import EnergyMetric
 
 # Pre-defined scenarios (per build guide: 2-3 pre-defined, not a full sim engine).
 # refining_loss_pct / price_delta_pct / reserve_days_impact are illustrative
@@ -32,17 +35,46 @@ SCENARIOS = {
     },
 }
 
-INDIA_RESERVE_DAYS = 9.5  # from the build guide's own framing numbers
+# India's actual strategic petroleum reserve (SPR) capacity is ~5.33 million
+# tonnes, roughly 39 million barrels across 3 underground caverns (Vizag,
+# Mangalore, Padur). Net crude import volume is roughly 4.1 million barrels/day.
+# 39M / 4.1M ≈ 9.5 days — this DERIVES the brief's "9.5 days" figure from real
+# quantities instead of just asserting it.
+INDIA_RESERVE_BARRELS = 39_000_000
+INDIA_DAILY_IMPORT_BBL = 4_100_000
+INDIA_RESERVE_DAYS = round(INDIA_RESERVE_BARRELS / INDIA_DAILY_IMPORT_BBL, 2)
+
+FALLBACK_WTI_PRICE = 75.0  # used only if no EnergyMetric row exists yet
 
 
-def compute_deterministic_impact(scenario_key: str) -> dict:
+def get_latest_wti_price(db: Session) -> tuple[float, bool]:
     """
-    The actual math — NOT from the LLM. This is the "hybrid deterministic +
-    LLM reasoning" answer for when judges ask 'how do you know that number
-    is real.'
+    Reads the most recent WTI spot price ingested by eia_ingestion.py.
+    Returns (price, is_real) — is_real=False means we fell back to a
+    static default because no data has been ingested yet. Surfacing this
+    flag (instead of silently faking it) matters for the demo: it's the
+    difference between "real data" and "quietly made up."
+    """
+    latest = (
+        db.query(EnergyMetric)
+        .filter_by(series_id="RWTC")
+        .order_by(EnergyMetric.period.desc())
+        .first()
+    )
+    if latest and latest.value is not None:
+        return latest.value, True
+    return FALLBACK_WTI_PRICE, False
+
+
+def compute_deterministic_impact(scenario_key: str, db: Session) -> dict:
+    """
+    The actual math not from the LLM. This is the "hybrid deterministic +
+    LLM reasoning" 
 
     Simple, transparent model: corridor's import share directly maps to
     refining loss %, which drives a price delta and reserve-day impact.
+    The price delta is now applied against the REAL latest WTI spot price
+    from EnergyMetric, not an abstract percentage alone.
     """
     if scenario_key not in SCENARIOS:
         raise ValueError(f"Unknown scenario: {scenario_key}")
@@ -50,11 +82,20 @@ def compute_deterministic_impact(scenario_key: str) -> dict:
     scenario = SCENARIOS[scenario_key]
     share = scenario["corridor_share_pct"]
 
-    # Illustrative formulas — deliberately simple and explainable in the demo.
-    refining_loss_pct = round(share * 0.9, 1)          # assume ~90% of that share is lost during closure
-    price_delta_pct = round(share * 0.6, 1)              # partial pass-through to price
+    refining_loss_pct = round(share * 0.9, 1)
+    price_delta_pct = round(share * 0.6, 1)
     reserve_days_impact = round(INDIA_RESERVE_DAYS * (refining_loss_pct / 100), 2)
     days_of_buffer_remaining = round(INDIA_RESERVE_DAYS - reserve_days_impact, 2)
+
+     
+    daily_shortfall_bbl = round(INDIA_DAILY_IMPORT_BBL * (refining_loss_pct / 100))
+    days_reserve_covers_shortfall = (
+        round(INDIA_RESERVE_BARRELS / daily_shortfall_bbl, 2) if daily_shortfall_bbl > 0 else None
+    )
+
+    current_price, price_is_real = get_latest_wti_price(db)
+    projected_price = round(current_price * (1 + price_delta_pct / 100), 2)
+    price_delta_usd = round(projected_price - current_price, 2)
 
     return {
         "scenario_key": scenario_key,
@@ -63,19 +104,35 @@ def compute_deterministic_impact(scenario_key: str) -> dict:
         "severity": scenario["severity"],
         "refining_loss_pct": refining_loss_pct,
         "price_delta_pct": price_delta_pct,
+        "current_price_usd": current_price,
+        "projected_price_usd": projected_price,
+        "price_delta_usd": price_delta_usd,
+        "price_is_live_data": price_is_real,
         "reserve_days_impact": reserve_days_impact,
         "days_of_buffer_remaining": days_of_buffer_remaining,
+        "reserve_capacity_bbl": INDIA_RESERVE_BARRELS,
+        "daily_import_bbl": INDIA_DAILY_IMPORT_BBL,
+        "daily_shortfall_bbl": daily_shortfall_bbl,
+        "days_reserve_covers_shortfall": days_reserve_covers_shortfall,
     }
 
 
 def build_narrative_prompt(impact: dict) -> str:
+    price_note = (
+        f"${impact['current_price_usd']}/bbl (live market data)"
+        if impact["price_is_live_data"]
+        else f"${impact['current_price_usd']}/bbl (estimated, no live price data yet)"
+    )
     return f"""You are a supply chain analyst briefing a procurement team.
 
 Scenario: {impact['label']}
 Computed impact (already calculated, do not recompute):
 - Refining capacity loss: {impact['refining_loss_pct']}%
-- Estimated price impact: +{impact['price_delta_pct']}%
-- Reserve days consumed: {impact['reserve_days_impact']} days
+- Current WTI price: {price_note}
+- Projected price after disruption: ${impact['projected_price_usd']}/bbl (+${impact['price_delta_usd']})
+- Daily import shortfall: {impact['daily_shortfall_bbl']:,} barrels/day
+- Strategic reserve: {impact['reserve_capacity_bbl']:,} barrels
+- Reserve alone would cover this shortfall for: {impact['days_reserve_covers_shortfall']} days
 - Reserve buffer remaining after impact: {impact['days_of_buffer_remaining']} days
 
 Write a 3-4 sentence cascading-impact narrative for a procurement officer,
@@ -84,13 +141,13 @@ to act. Reference the specific numbers above. Respond with ONLY a JSON object:
 {{"narrative": "<your 3-4 sentence narrative>"}}"""
 
 
-def simulate_scenario(scenario_key: str) -> dict:
+def simulate_scenario(scenario_key: str, db: Session) -> dict:
     """
     Full simulate flow: deterministic calc + LLM narrative on top.
     Falls back to a templated narrative if the LLM call fails — the
     numbers are still valid either way since they never depended on the LLM.
     """
-    impact = compute_deterministic_impact(scenario_key)
+    impact = compute_deterministic_impact(scenario_key, db)
 
     try:
         prompt = build_narrative_prompt(impact)
@@ -100,10 +157,10 @@ def simulate_scenario(scenario_key: str) -> dict:
         print(f"Narrative generation failed for {scenario_key}: {e}")
         narrative = (
             f"{impact['label']} would cut refining capacity by {impact['refining_loss_pct']}%, "
-            f"pushing prices up an estimated {impact['price_delta_pct']}% and consuming "
-            f"{impact['reserve_days_impact']} days of India's reserve buffer, leaving "
-            f"{impact['days_of_buffer_remaining']} days of cover. Immediate procurement "
-            f"action is recommended."
+            f"pushing WTI from ${impact['current_price_usd']} to an estimated "
+            f"${impact['projected_price_usd']}/bbl and consuming {impact['reserve_days_impact']} "
+            f"days of India's reserve buffer, leaving {impact['days_of_buffer_remaining']} days "
+            f"of cover. Immediate procurement action is recommended."
         )
 
     impact["narrative"] = narrative

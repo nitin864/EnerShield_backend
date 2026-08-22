@@ -72,3 +72,20 @@ class EnergyMetric(Base):
     value = Column(Float, nullable=True)
     unit = Column(String(50), nullable=True)
     fetched_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class SanctionsSignal(Base):
+    """
+    Snapshot of how many OFAC-sanctioned entities are currently linked to a
+    corridor's associated sanctions program (e.g. Iran-related listings for
+    Hormuz). One row per corridor, overwritten (not appended) each ingestion
+    run — this is a live count, not a history log.
+    """
+    __tablename__ = "sanctions_signals"
+
+    id = Column(Integer, primary_key=True)
+    corridor_id = Column(Integer, ForeignKey("corridors.id"), nullable=False, unique=True)
+    corridor = relationship("Corridor")
+    matched_keywords = Column(String(255), nullable=True)   # e.g. "IRAN"
+    entity_count = Column(Integer, nullable=False, default=0)
+    fetched_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
