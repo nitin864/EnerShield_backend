@@ -10,8 +10,15 @@ class Settings(BaseSettings):
     database_url: str
 
     # Claude API
-    anthropic_api_key: str
-    claude_model: str = "claude-sonnet-4-6"
+    anthropic_api_key: str = ""
+    claude_model: str = "claude-haiku-4-5-20251001"
+
+    # Groq API (free alternative — used for now)
+    groq_api_key: str = ""
+    groq_model: str = "openai/gpt-oss-20b"
+
+    # Which provider risk_scoring.py should actually call
+    llm_provider: str = "groq"  # "groq" or "claude"
 
     # External data sources
     newsapi_key: str = ""

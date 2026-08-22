@@ -1,0 +1,26 @@
+# --- Database (Supabase Postgres) ---
+DATABASE_URL=postgresql+psycopg://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres
+
+# --- Claude API (Anthropic) — optional for now, swap in later ---
+ANTHROPIC_API_KEY=
+CLAUDE_MODEL=claude-haiku-4-5-20251001
+
+# --- Groq API (free, used for now) ---
+GROQ_API_KEY=your_groq_key_here
+GROQ_MODEL=llama-3.3-70b-versatile
+
+# Which provider risk_scoring.py calls: "groq" or "claude"
+LLM_PROVIDER=groq
+
+# --- News / Data sources ---
+NEWSAPI_KEY=your_newsapi_org_key
+EIA_API_KEY=your_eia_gov_key
+GUARDIAN_API_KEY=your_guardian_api_key_optional
+
+# --- App config ---
+ENV=development
+CORS_ORIGINS=http://localhost:3000,https://your-frontend.vercel.app
+INGEST_INTERVAL_MINUTES=15
+
+# --- Fallback / demo safety ---
+USE_SEEDED_FALLBACK=true

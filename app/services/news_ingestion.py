@@ -61,28 +61,23 @@ def save_headline_if_new(db, corridor: Corridor, article: dict) -> bool:
         article["title"]        -> str
         article["url"]          -> str
         article["source"]["name"] -> str
-        article["publishedAt"]  -> str, ISO format e.g. "2026-08-19T10:15:00Z"""
+        article["publishedAt"]  -> str, ISO format e.g. "2026-08-19T10:15:00Z"
 
-    existing = db.query(Headline).filter_by(corridor_id=corridor.id, url=article["url"]).first()
-
-    if existing:
-      return False
-
-    published_at = datetime.fromisoformat(article["publishedAt"].replace("Z", "+00:00"))
-
-    headline = Headline(
-    corridor_id=corridor.id,
-    title=article["title"],
-    source=article["source"]["name"],
-    url=article["url"],
-    published_at=published_at,
-    fetched_at=datetime.now(timezone.utc),
-    )
-
-    db.add(headline)
-
-    return True 
-    
+    TODO — implement this function:
+    1. Check if a Headline with this corridor_id + url already exists
+       (query Headline, filter by both fields, .first())
+    2. If it exists, return False (nothing to do)
+    3. If not, parse publishedAt into a datetime:
+         datetime.fromisoformat(article["publishedAt"].replace("Z", "+00:00"))
+       (NewsAPI gives "Z" suffix which Python's fromisoformat doesn't
+       accept directly before 3.11 — this replace handles it safely)
+    4. Create a new Headline object with corridor_id, title, source,
+       url, published_at, and fetched_at=datetime.now(timezone.utc)
+    5. db.add() it (don't commit here — let the caller batch-commit
+       after processing all articles, that's more efficient)
+    6. Return True
+    """
+    pass  # <- replace this with your implementation
 
 
 def ingest_all_corridors():

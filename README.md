@@ -1,4 +1,7 @@
+
+# Ener Shield  Backend
 # EnerShield Backend
+(created new table for sanctionssignal)
 
 ![Python 3.13](https://img.shields.io/badge/python-3.13-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688)
@@ -12,10 +15,19 @@ AI-driven energy supply-chain resilience API, built for the **PS1: Energy Resili
 
 ## Why it's useful
 
+- [x] Module 1 — Core scaffold (FastAPI app, config, DB connection, health check)
+- [x] Module 2 — Data models (corridors, suppliers, headlines, risk_history)
+- [x] Module 3 — Ingestion pipeline (GDELT, NewsAPI, EIA, OFAC)
+- [x] Module 4 — Risk scoring engine (`/risk-score`)
+- [x] Module 5 — Scenario simulator (`/simulate`)
+- [x] Module 6 — Procurement orchestrator (`/recommend`)
+- [x] Module 7 — Wiring + resilience (fallback, error handling)
+- [x] Module 8 — Deploy config
 - **Deterministic-first, LLM-second.** Risk scores, impact percentages, and supplier rankings all come from transparent formulas over real cached data. The LLM's only job is to justify a score or narrate a scenario in plain language — so every number on the dashboard can be traced back to a calculation, not a hallucination.
 - **Pluggable LLM provider.** Swap between Anthropic Claude and Groq with one config value (`LLM_PROVIDER`) — no code changes required. Useful for keeping a fast/free provider during development and switching to Claude for the polished demo.
 - **Resilient by design.** Every external call (news API, EIA API, LLM) is wrapped so a single failure degrades gracefully instead of crashing the pipeline — a flaky headline source shouldn't take down risk scoring, and a failed LLM call falls back to the last known-good score rather than showing nothing.
 - **Self-refreshing data.** A background scheduler pulls fresh headlines and crude oil price data on a configurable interval, so the dashboard stays current without manual intervention.
+ 
 
 ## How it works
 
