@@ -90,6 +90,8 @@ curl http://localhost:8000/recommend
 ```bash
 pytest tests/ -v
 ```
+## Deployment
+Provided a render.yaml file for quick deployment on render.
 
 Runs against an in-memory SQLite DB — no live database needed.
 
