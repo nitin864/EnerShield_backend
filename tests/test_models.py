@@ -1,4 +1,4 @@
-"""
+ """
 Tests for ORM models. Uses an in-memory SQLite DB — fast, isolated,
 never touches your real Supabase data.
 
@@ -56,14 +56,18 @@ def test_corridor_headline_relationship(db_session):
     db_session.add(headline)
     db_session.commit()
 
-    # TODO: query the corridor back and assert it has exactly one headline
-    #   via the relationship — NOT by querying Headline directly.
-    #   Hint: db_session.query(Corridor).filter_by(name="Red Sea").first()
-    #   then check .headlines (the relationship from your reference model)
+    # Query the corridor back and assert it has exactly one headline
+    # via the relationship — NOT by querying Headline directly.
+    result = db_session.query(Corridor).filter_by(name="Red Sea").first()
+    assert result is not None
+    assert len(result.headlines) == 1
+    assert result.headlines[0].title == "Houthi attacks disrupt Red Sea shipping"
 
-    # TODO: also assert headline.corridor.name == "Red Sea" — this proves
-    #   the relationship works in BOTH directions (Corridor -> Headline
-    #   and Headline -> Corridor)
+    # Also assert headline.corridor.name == "Red Sea" — this proves the
+    # relationship works in BOTH directions (Corridor -> Headline and
+    # Headline -> Corridor).
+    assert headline.corridor is not None
+    assert headline.corridor.name == "Red Sea"
 
 
 def test_risk_history_ordering(db_session):
@@ -75,9 +79,57 @@ def test_risk_history_ordering(db_session):
     db_session.add(corridor)
     db_session.commit()
 
-    # TODO: create two RiskHistory rows for this corridor with different
-    #   scores (e.g. 40 and then 65), commit both.
+    # Create two RiskHistory rows for this corridor with different scores,
+    # committing each separately so they mirror two real scoring runs
+    # happening one after another.
+    first_score = RiskHistory(
+        corridor_id=corridor.id,
+        score=40,
+        confidence=0.6,
+        justification="Initial baseline read on limited headline volume.",
+    )
+    db_session.add(first_score)
+    db_session.commit()
 
-    # TODO: query all RiskHistory rows for this corridor
-    #   (db_session.query(RiskHistory).filter_by(corridor_id=corridor.id).all())
-    #   and assert len(...) == 2
+    second_score = RiskHistory(
+        corridor_id=corridor.id,
+        score=65,
+        confidence=0.8,
+        justification="Escalation reported in follow-up headlines.",
+    )
+    db_session.add(second_score)
+    db_session.commit()
+
+    # Query all RiskHistory rows for this corridor and confirm both were saved.
+    history = (
+        db_session.query(RiskHistory)
+        .filter_by(corridor_id=corridor.id)
+        .order_by(RiskHistory.scored_at.asc())
+        .all()
+    )
+    assert len(history) == 2
+    assert history[0].score == 40
+    assert history[1].score == 65
+
+
+def test_corridor_supplier_relationship(db_session):
+    """
+    Suppliers reference a corridor via corridor_id — confirm the FK holds
+    and that we can look a supplier's corridor back up.
+    """
+    corridor = Corridor(name="Strait of Malacca", region="Southeast Asia")
+    db_session.add(corridor)
+    db_session.commit()
+
+    supplier = Supplier(
+        name="Russia ESPO (Malacca route)",
+        corridor_id=corridor.id,
+        distance_km=6200,
+        cost_proxy=38,
+    )
+    db_session.add(supplier)
+    db_session.commit()
+
+    result = db_session.query(Supplier).filter_by(name="Russia ESPO (Malacca route)").first()
+    assert result is not None
+    assert result.corridor.name == "Strait of Malacca"
