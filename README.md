@@ -1,7 +1,6 @@
 
 # Ener Shield  Backend
-# EnerShield Backend
-(created new table for sanctionssignal)
+  
 
 ![Python 3.13](https://img.shields.io/badge/python-3.13-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688)
