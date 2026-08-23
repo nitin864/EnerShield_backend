@@ -1,15 +1,15 @@
-# Corridor Pulse — EnerShield Backend
+# EnerShield Backend
 
 ![Python 3.13](https://img.shields.io/badge/python-3.13-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688)
 ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-red)
 ![Status: hackathon build](https://img.shields.io/badge/status-hackathon%20build-orange)
 
-AI-driven energy supply-chain resilience API, built for the **PS1: Energy Resilience** hackathon track. This is the backend that powers **Corridor Pulse** — a dashboard that watches the shipping chokepoints India's crude oil imports depend on, and tells procurement teams when to worry.
+AI-driven energy supply-chain resilience API, built for the **PS1: Energy Resilience** OOSC 4.0 Hackathon. This is the backend that powers **EnerShield**  a dashboard that watches the shipping chokepoints India's crude oil imports depend on, and tells procurement teams when to worry.
 
-**The problem.** A large share of India's crude oil imports pass through a handful of geopolitical chokepoints — the Strait of Hormuz, the Red Sea, the Suez Canal — while the country's strategic reserve covers only a matter of days. By the time a disruption makes headlines, it's often too late to react.
+**The problem.** A large share of India's crude oil imports pass through a handful of geopolitical chokepoints the Strait of Hormuz, the Red Sea, the Suez Canal while the country's strategic reserve covers only a matter of days. By the time a disruption makes headlines, it's often too late to react.
 
-**The approach.** A live pipeline that scores corridor risk from real headlines and sanctions data, simulates the cascading impact of specific disruption scenarios using transparent formulas, and ranks alternate suppliers/routes — with an LLM (Claude or Groq) layered on top purely as the *explanation* engine, never as the source of the underlying numbers.
+**The approach.** A live pipeline that scores corridor risk from real headlines and sanctions data, simulates the cascading impact of specific disruption scenarios using transparent formulas, and ranks alternate suppliers/routes with an LLM layered on top purely as the *explanation* engine, never as the source of the underlying numbers.
 
 ## Table of contents
 
