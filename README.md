@@ -73,7 +73,7 @@ Check `http://localhost:8000/health` → `{"status": "ok", "database": "connecte
 
 | Endpoint | What it returns |
 |---|---|
-| `GET /corridors` | Live risk score per corridor — powers the map |
+| `GET /corridors` | Live risk score per corridor powers the map |
 | `GET /corridors/{id}/headlines` | The headlines behind a score |
 | `POST /risk-score/run` | Re-score all corridors on demand (great right before a demo) |
 | `GET /simulate/scenarios` | Available disruption scenarios |
@@ -93,7 +93,7 @@ pytest tests/ -v
 ## Deployment
 Provided a render.yaml file for quick deployment on render.
 
-Runs against an in-memory SQLite DB — no live database needed.
+Runs against an in-memory SQLite DB  no live database needed.
 
 ## Prototype status
 
