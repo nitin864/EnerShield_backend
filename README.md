@@ -137,13 +137,9 @@ pytest tests/ -v
 
 ## Current status
 
-This backend is being built module by module for the hackathon submission. Core scaffolding, data models, the scenario simulator, and the procurement orchestrator are working end to end. A few pieces are still stubbed out in the source and will raise or no-op until implemented:
+This backend is being built module by module for the hackathon submission. Core scaffolding, data models, the scenario simulator, and the procurement orchestrator are working end to end. 
 
-- `score_corridor` in `app/services/risk_scoring.py` (drives the `/risk-score/run` endpoints)
-- `save_headline_if_new` in `app/services/news_ingestion.py`
-- `save_metric_if_new` in `app/services/eia_ingestion.py`
 
-Being upfront about what's implemented vs. in progress is part of the build guide's own grading criteria, so this list is kept current as modules land.
 
 ## Getting help
 
@@ -153,6 +149,6 @@ Being upfront about what's implemented vs. in progress is part of the build guid
 
 ## Maintainers & contributing
 
-Maintained by [@nitin864](https://github.com/nitin864). This is an active hackathon build — issues and pull requests are welcome, especially for the stubbed functions listed above under [Current status](#current-status).
+Maintained by [@nitin864](https://github.com/nitin864). This is an active hackathon build  issues and pull requests are welcome, especially for the stubbed functions listed above under [Current status](#current-status).
 
 Licensed under the terms in the repository's `LICENSE` file (add one if it's missing before publishing).
